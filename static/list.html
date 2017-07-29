@@ -1,0 +1,176 @@
+<!DOCTYPE Html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>EMS</title>
+
+  <link rel="stylesheet" href="css/semantic.min.css"></link>
+<style>
+img{
+    margin-bottom:-30px;
+    margin-top:-30px;
+}
+
+</style>
+</head>
+<body>
+<div class="ui container">
+  <div class="ui stackable olive top fixed massive labeld icon menu">
+    <div class="ui text menu">
+        <div class="item" style="font-size:30px;color:#29b6f6;margin-left:460px">Employee Management system</div>
+    </div>
+  </div>
+
+<!-- nav bar-->
+<div class="margin"></div>
+	<div class="ui grid">
+		<div class="three wide column">
+			<table class="ui unstackable table">
+				<div class="ui fluid search selection dropdown" id="idDropDown">
+	              <i class="dropdown icon"></i>
+	              <div class="default text">All</div>
+	              <div class="menu">
+					  <div class="item" data-value="employee" onClick="view('all')">All</div>
+	                  <div class="item" data-value="manager" onClick="view('manager')">Manager</div>
+	                  <div class="item" data-value="employee" onClick="view('employee')">Employee</div>
+	              </div>
+	            </div>
+				<tbody id="tableList">
+
+				</tbody>
+			</table>
+		</div>
+		<div style="five wide column">
+			<div id="empRoot">
+				Status : <button class="ui button" id="btnStatus" onClick="changeStatus()"></button>
+				<table class="ui unstackable table">
+					<tbody id="tableCon">
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div style="four wide column">
+			<div id="logRoot">
+				Login Details
+				<table class="ui unstackable table">
+					<thead>
+						<th>Time Stamp</th>
+						<th>Valid</th>
+					</thead>
+					<tbody id="tableLogs">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="js/jquery-3.1.1.min.js"></script>
+<!--jquery should be loaded before sematic and your custom javascript -->
+<script src="js/semantic.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('.ui.selection.dropdown').dropdown();
+});
+var height = $("body").innerHeight();
+var hgt = height*0.25;
+//document.write(hgt);
+$('.margin').height(hgt);
+$("#empRoot").hide();
+$("#logRoot").hide();
+</script>
+
+<script>
+	function showDetails(username){
+		$.post("/showDetails",{username:username}, function(result){
+			result = JSON.parse(result);
+			console.log(result);
+			if (result.Message == "success"){
+				data = result.Data;
+				s = `
+					<tr><td> UserName </td><td>`+data.UserName+`
+					<tr><td> Name </td><td>`+ data.Name +`
+					<tr><td> Email </td><td>`+ data.Email +`
+					<tr><td> Status </td><td>`+ data.Status +`
+					<tr><td> Role </td><td>`+ data.Role
+				$("#tableCon").html(s);
+				$("#profilePicImg").attr("src",data.ProfilePic);
+				$("#nameDiv").html(data.Name);
+				$("#btnStatus").html(data.Status);
+			}else{
+				alert(result.Message);
+			}
+		})
+	}
+	var employeeList;
+	var uname;
+	$.post("/listEmployee",{}, function(result){
+		result = JSON.parse(result);
+		if (result.Message == "success"){
+			employeeList = result.Data;
+			showEmployees('all');
+		}else{
+			alert(result.Message);
+		}
+	});
+
+	function showEmployees(type){
+		s = "";
+		for (i in employeeList){
+			console.log(employeeList[i]);
+			if (type == 'all'){
+				s = s + `<tr><td onClick="empClicked('`+employeeList[i].UserName+`')">`+employeeList[i].Name+'</td></tr>';
+			}else if(type == employeeList[i].Role){
+				s = s + `<tr><td onClick="empClicked('`+employeeList[i].UserName+`')">`+employeeList[i].Name+'</td></tr>';
+			}
+		}
+		$("#tableList").html(s);
+	}
+	function empClicked(username){
+		$("#empRoot").show();
+		uname=username;
+		showDetails(username);
+		showLogs(username);
+	}
+	function showLogs(username){
+		$.post("/timestamps",{username:username},function(result){
+			console.log(result);
+			result = JSON.parse(result);
+			if(result.Message == "success"){
+				s = "";
+				$("#logRoot").show();
+				if (result.Data.length == 0){
+					$("#logRoot").hide();
+				}
+				for ( i in result.Data){
+					s = s + `
+						<tr>
+							<td> `+result.Data[i].Timestamp+`</td>
+							<td> `+result.Data[i].IsValid+`</td>
+						</tr>
+					`
+				}
+				$("#tableLogs").html(s);
+			}
+
+		});
+	}
+
+	function changeStatus(){
+		s = $("#btnStatus").html();
+		var stat = "enabled";
+		if ( s== "enabled"){
+			stat = "disabled";
+		}
+		$("#btnStatus").html(stat);
+		$.post("/changeStatus",{username:uname, status:stat}, function(result){});
+	}
+	function view(type){
+		showEmployees(type);
+	}
+</script>
+
+</body>
+</html>

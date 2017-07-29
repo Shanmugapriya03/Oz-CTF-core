@@ -1,0 +1,127 @@
+<!DOCTYPE Html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>EMS</title>
+
+  <link rel="stylesheet" href="css/semantic.min.css"></link>
+<style>
+img{
+    margin-bottom:-30px;
+    margin-top:-30px;
+}
+
+</style>
+</head>
+<body>
+<div class="ui container">
+  <div class="ui stackable olive top fixed massive labeld icon menu">
+    <div class="ui text menu">
+        <div class="item" style="font-size:30px;color:#29b6f6;margin-left:460px">Employee Management system</div>
+    </div>
+  </div>
+
+<!-- nav bar-->
+<div class="margin"></div>
+<div class="ui padded grid">
+  <div class="ui center aligned container"><h1>Login</h1></div>
+  <div class="centered sixteen wide mobile only eight wide tablet only six wide computer only column">
+    <div class="ui container">
+      <div class="ui form">
+
+        <div class="field">
+          <label id="lablelDropDown">User Type</label>
+          <div class="ui fluid search selection dropdown" id="idDropDown">
+            <i class="dropdown icon"></i>
+            <div class="default text">Select Type Of User</div>
+            <div class="menu">
+                <div class="item" data-value="manager">Manager</div>
+                <div class="item" data-value="employee">Employee</div>
+            </div>
+          </div>
+      </div>
+      <div class="field">
+        <label id="lablelUserName">User Id</label>
+          <input name="id" id="userId" placeholder="Id" type="text">
+      </div>
+      <div class="field">
+        <label id="lablelPassword">Password</label>
+          <input name="pass" id="password" placeholder="password" type="password">
+      </div>
+
+      <div class="fluid ui buttons">
+        <button class="ui blue button" id="loginbtn">Sign In</button>
+        <div class="or"></div>
+        <button class="ui grey button">Cancel</button>
+      </div>
+	  <div id="errors" class="ui inverted red segment">
+
+	  </div>
+    </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="js/jquery-3.1.1.min.js"></script>
+<!--jquery should be loaded before sematic and your custom javascript -->
+<script src="js/semantic.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('.ui.selection.dropdown').dropdown();
+});
+var height = $("body").innerHeight();
+var hgt = height*0.25;
+//document.write(hgt);
+$('.margin').height(hgt);
+$("#errors").hide();
+</script>
+
+<script>
+    $("#loginbtn").on("click",function(){
+        var userId = $("#userId").val();
+        var password = $("#password").val();
+		var role = $('#idDropDown').dropdown('get value');
+		var flag = false;
+		errors = "";
+		if (userId == ""){
+			errors = errors + '<div class="ui warning">Fill in UserName</div>';
+			flag = true;
+		}
+		if (password == ""){
+			errors = errors + '<div class="ui warning">Fill in Password</div>';
+			flag = true;
+		}
+		if (role == ""){
+			errors = errors + '<div class="ui warning">Select type of user</div>';
+			flag = true;
+		}
+		if (flag){
+			console.log(errors);
+			$("#errors").show();
+			$("#errors").html(errors);
+			return
+		}
+		console.log(flag);
+        $.get("/login",{ username:userId,password:password, role:role },function(result){
+            console.log(result);
+			result = JSON.parse(result)
+            if(result.Message == "ok"){
+				if (role == "manager"){
+					window.location = "list.html";
+				}else{
+					window.location = "profile.html";
+				}
+            }else{
+				$("#errors").show();
+				$("#errors").html(result.Message);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
