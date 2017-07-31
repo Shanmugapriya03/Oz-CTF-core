@@ -8,6 +8,8 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	session.Values["username"] = ""
+
+	session.Options.MaxAge = -1
+	session.Save(r, w)
 	webresponse("done", nil, nil, w)
 }

@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -26,7 +25,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	username := t.UserName
 	password := t.Password
 
-	fmt.Println(username, password)
+	//fmt.Println(username, password)
 	user := model.User{UserName: username, Password: password}
 	session, err := store.Get(r, "session-name")
 	if err != nil {
@@ -34,7 +33,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	check, msg := user.IsValidLogin(db)
-	fmt.Println(check, msg)
+	//fmt.Println(check, msg)
 	if check {
 		session.Values["username"] = username
 		session.Save(r, w)

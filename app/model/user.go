@@ -14,7 +14,7 @@ type User struct {
 	Password           string `gorm:"not null"`
 	Name               string `gorm:"not null"`
 	Email              string `gorm:"not null"`
-	EndTime            string `gorm:"not null"`
+	StartTime          string `gorm:"not null"`
 	LastSubmissionTime string `gorm:"not null"`
 }
 
@@ -24,6 +24,14 @@ func (user User) IsValidLogin(db *gorm.DB) (bool, string) {
 	db.Where("user_name=?", user.UserName).First(&tempUser)
 
 	if tempUser.Password == user.Password && user.Password != "" {
+		//fmt.Println(tempUser.StartTime)
+		if tempUser.StartTime == "" {
+			//first login
+			currentTime := fmt.Sprintf("%v", time.Now().UnixNano()/1000000)
+			tempUser.StartTime = currentTime
+			fmt.Println("setting time", user.UserName, currentTime)
+			db.Save(&tempUser)
+		}
 		return true, "ok"
 	}
 	return false, "check credentials"

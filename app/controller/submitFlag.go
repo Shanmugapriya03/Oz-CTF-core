@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -10,8 +12,26 @@ import (
 
 func SubmitFlag(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		flag := r.FormValue("flag")
-		cid := r.FormValue("cid")
+		decoder := json.NewDecoder(r.Body)
+		var t interface{}
+		err := decoder.Decode(&t)
+		if err != nil {
+			log.Println(err)
+			webresponse("Not Valid", nil, nil, w)
+			return
+		}
+		defer r.Body.Close()
+		fmt.Println("%v", t)
+		flagInter := t.(map[string]interface{})["flag"]
+		cidInter := t.(map[string]interface{})["cid"]
+		if flagInter == nil || cidInter == nil {
+			webresponse("Parameter not present", nil, nil, w)
+			return
+		}
+		flag := flagInter.(string)
+		cid := cidInter.(float64)
+		//fmt.Println(flag, cid)
+
 		session, err := store.Get(r, "session-name")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -35,10 +55,11 @@ func SubmitFlag(w http.ResponseWriter, r *http.Request) {
 			webresponse("Not Valid CID", nil, nil, w)
 			return
 		}
+
 		if challenge.Flag == flag {
-			now := time.Now()
-			submission := model.Submission{UserId: user.ID, ChallengeId: challenge.ID, Points: challenge.Points, Timestamp: now.String()}
-			db.Create(submission)
+			now := fmt.Sprintf("%v", time.Now().UnixNano()/1000000)
+			submission := model.Submission{UserId: user.ID, ChallengeId: challenge.ID, Points: challenge.Points, Timestamp: now}
+			db.Create(&submission)
 			webresponse("valid", nil, nil, w)
 			return
 		}

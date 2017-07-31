@@ -1,10 +1,6 @@
 package model
 
-import (
-	"fmt"
-
-	"github.com/jinzhu/gorm"
-)
+import "github.com/jinzhu/gorm"
 
 type Challenge struct {
 	gorm.Model
@@ -12,6 +8,7 @@ type Challenge struct {
 	Points  int    `json:"score"`
 	Content string `json:"content"`
 	Flag    string
+	Solved  bool   `gorm:"-"`
 	Hints   []Hint `json:"hint"`
 }
 type Hint struct {
@@ -39,6 +36,6 @@ func (challenge Challenge) GetHints(db *gorm.DB) []Hint {
 			hints = append(hints, hint)
 		}
 	}
-	fmt.Print(err)
+	//fmt.Print(err)
 	return hints
 }

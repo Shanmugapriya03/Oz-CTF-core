@@ -24,7 +24,10 @@ func LoadRoutes() {
 	api.HandleFunc("/listChallenges", controller.ListChallenges)
 	api.HandleFunc("/submitFlag", controller.SubmitFlag)
 	api.HandleFunc("/logout", controller.UserLogout)
+	api.HandleFunc("/userDetails", controller.UserDetails)
+	api.HandleFunc("/leaderboard", controller.Leaderboard)
 
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("../Oz-CTF-UI")))
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         address,
