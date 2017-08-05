@@ -58,9 +58,16 @@ func SubmitFlag(w http.ResponseWriter, r *http.Request) {
 
 		if challenge.Flag == flag {
 			now := fmt.Sprintf("%v", time.Now().UnixNano()/1000000)
-			submission := model.Submission{UserId: user.ID, ChallengeId: challenge.ID, Points: challenge.Points, Timestamp: now}
-			db.Create(&submission)
-			webresponse("valid", nil, nil, w)
+			oldSub := model.Submission{}
+			gobj := db.Where("user_id = ? and challenge_id = ?", user.ID, challenge.ID).Find(&oldSub)
+			fmt.Println("testSubmission", gobj.Error)
+			if gobj.RecordNotFound() {
+				submission := model.Submission{UserId: user.ID, ChallengeId: challenge.ID, Points: challenge.Points, Timestamp: now}
+				db.Create(&submission)
+				webresponse("valid", nil, nil, w)
+			} else {
+				webresponse("already submitted", nil, nil, w)
+			}
 			return
 		}
 	}

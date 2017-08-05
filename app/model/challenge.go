@@ -22,15 +22,15 @@ type Hint struct {
 func (challenge Challenge) GetHints(db *gorm.DB) []Hint {
 	hints := make([]Hint, 0, 100)
 	sqlDb := db.DB()
-	rows, err := sqlDb.Query("select name, content, is_activated challenge_id from hints where challenge_id = ?", challenge.ID)
+	rows, err := sqlDb.Query("select name, content, is_activated, challenge_id from hints where challenge_id = ?", challenge.ID)
 	if err == nil {
 		for rows.Next() {
 			var name, content string
 			var challengeId int
-			var isActivated bool
+			var isActivated string
 			rows.Scan(&name, &content, &challengeId, &isActivated)
 			hint := Hint{Name: name, ChallengeId: challengeId}
-			if isActivated {
+			if len(isActivated) != 0 {
 				hint.Content = content
 			}
 			hints = append(hints, hint)
